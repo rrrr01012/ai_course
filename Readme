@@ -1,4 +1,8 @@
 這是課程小組的github
+
+kappa.py是計算kappa值的程式
+
+
 需要
 pandas
 scikit-metrics
