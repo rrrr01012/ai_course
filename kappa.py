@@ -21,6 +21,7 @@ def kappa(list1,list2,key):
             b = 0
         else:
             m.append(0)
+   
     #把label2值做搜尋key，再append到m2裡        
     for i in range(0,100):
         size = len(list2[i])
@@ -35,6 +36,7 @@ def kappa(list1,list2,key):
             b = 0
         else:
             m2.append(0)
+    
     return cohen_kappa_score(m, m2)
 #資料處理 Label1
 df['Label1'] = df['Label1'].str.replace('\r','') 
@@ -47,7 +49,8 @@ df['Label2'] = df['Label2'].str.replace('\n','')
 df['Label2'] = df['Label2'].str.replace(' ','')
 df['Label2'] = df['Label2'].str.split(",")
 #設定要搜尋的key
-key = "適合全年齡層"
+key = "老年(65歲以上)"
 ans = kappa(df['Label1'], df['Label2'],key)
 print(ans)
+
 
