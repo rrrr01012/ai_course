@@ -54,56 +54,56 @@ train_df = load_df(train_dataset_path)
 test_dataset_path = 'TrainingData.xlsx'
 test_df = load_df(test_dataset_path)
 test_df = convert_testing_df_label(test_df)
-# def load_tokenizer(df):
-#     vec = TfidfVectorizer()
-#     texts = []
-#     for index, row in df.iterrows():
-#         text = row['name'] + ' ' + row['description'] + ' ' + row['category'] + ' ' + row['owner name'] + ' ' + row[
-#             'location']
-#         cut_result = ' '.join(jieba.cut(text, cut_all=False, HMM=True))
-#         texts.append(cut_result)
-#     return vec.fit_transform(texts)
+def load_tokenizer(df):
+    vec = TfidfVectorizer()
+    texts = []
+    for index, row in df.iterrows():
+        text = row['name'] + ' ' + row['description'] + ' ' + row['category'] + ' ' + row['owner name'] + ' ' + row[
+            'location']
+        cut_result = ' '.join(jieba.cut(text, cut_all=False, HMM=True))
+        texts.append(cut_result)
+    return vec.fit_transform(texts)
 
-# def load_dataset(df, vec, y_key): #把不同feature合併成一個字串
-#     x_list = []
-#     y_list = []
+def load_dataset(df, vec, y_key): #把不同feature合併成一個字串
+    x_list = []
+    y_list = []
 
-#     for index, row in df.iterrows():
-#         text = row['name'] + ' ' + row['description'] + ' ' + row['category'] + ' ' + row['owner name'] + ' ' + row[
-#             'location']
-#         cut_result = ' '.join(jieba.cut(text, cut_all=False, HMM=True))
-#         x_list.append(cut_result)
-#         y_list.append(row[y_key])
+    for index, row in df.iterrows():
+        text = row['name'] + ' ' + row['description'] + ' ' + row['category'] + ' ' + row['owner name'] + ' ' + row[
+            'location']
+        cut_result = ' '.join(jieba.cut(text, cut_all=False, HMM=True))
+        x_list.append(cut_result)
+        y_list.append(row[y_key])
     
-#     return x_list, np.array(y_list)
+    return x_list, np.array(y_list)
 
 
-# tokenizer = load_tokenizer(train_df)
-# vec = TfidfVectorizer()
+tokenizer = load_tokenizer(train_df)
+vec = TfidfVectorizer()
 
-# X_train_, y_train = load_dataset(train_df, vec, 'Label')
-# X_train = vec.fit_transform(X_train_)
-# X_test_, y_test = load_dataset(test_df, vec, '高中(15歲~18歲)')
-# X_test = vec.transform(X_test_)
+X_train_, y_train = load_dataset(train_df, vec, 'Label')
+X_train = vec.fit_transform(X_train_)
+X_test_, y_test = load_dataset(test_df, vec, '高中(15歲~18歲)')
+X_test = vec.transform(X_test_)
 
-# def evaluation(y_test, y_predict_scores, threshold):
-#     y_test = np.asarray(y_test)
-#     y_pred = np.select([y_predict_scores < threshold, y_predict_scores >= threshold],
-#                        [np.zeros_like(y_predict_scores), np.ones_like(y_predict_scores)])
+def evaluation(y_test, y_predict_scores, threshold):
+    y_test = np.asarray(y_test)
+    y_pred = np.select([y_predict_scores < threshold, y_predict_scores >= threshold],
+                       [np.zeros_like(y_predict_scores), np.ones_like(y_predict_scores)])
 
-#     accuracy = accuracy_score(y_test, y_pred)  # 沒有average參數
-#     precision = precision_score(y_test, y_pred, average='binary')
-#     recall = recall_score(y_test, y_pred, average='binary')
-#     f1score = f1_score(y_test, y_pred, average='binary')
+    accuracy = accuracy_score(y_test, y_pred)  # 沒有average參數
+    precision = precision_score(y_test, y_pred, average='binary')
+    recall = recall_score(y_test, y_pred, average='binary')
+    f1score = f1_score(y_test, y_pred, average='binary')
 
-#     return accuracy, precision, recall, f1score
+    return accuracy, precision, recall, f1score
     
-# model = MultinomialNB()
-# model.fit(X_train, y_train)
-# test_predict_scores = model.predict(X_test)
-# accuracy, precision, recall, f1score = evaluation(y_test, test_predict_scores, 0.5)
+model = MultinomialNB()
+model.fit(X_train, y_train)
+test_predict_scores = model.predict(X_test)
+accuracy, precision, recall, f1score = evaluation(y_test, test_predict_scores, 0.5)
 
-# print('accuracy :', accuracy)
-# print('precision:', precision)
-# print('recall   :', recall)
-# print('f1 score :', f1score)
+print('accuracy :', accuracy)
+print('precision:', precision)
+print('recall   :', recall)
+print('f1 score :', f1score)
