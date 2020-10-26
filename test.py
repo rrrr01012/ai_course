@@ -3,13 +3,16 @@ import jieba
 import pandas as pd
 import numpy as np
 import keras
+import tensorflow as tf
+import csv
 # 需要裝Tensorflow
-from keras.layers import Embedding, Dense
+from keras.layers import Embedding, Dense , LSTM , Dropout
 from sklearn.preprocessing import MultiLabelBinarizer
 from keras.models import Sequential, load_model
 from keras.preprocessing.sequence import pad_sequences
 from keras.layers import Flatten
 from tensorflow.keras import models, layers 
+
 def load_df(dataset_path): #讀資料
     df = pd.read_excel(dataset_path, sheet_name=0, header=0,
                                  converters={'id': str, 'name': str, 'description': str, 'category': str,
@@ -66,8 +69,8 @@ test_df = load_df(test_dataset_path)
 # listall = cut_all(train_df)
 X = []
 X2 = []
-tok = keras.preprocessing.text.Tokenizer(10000)
-max_length = 600
+tok = keras.preprocessing.text.Tokenizer(100000)
+max_length = 800
 # train_df.shape[0]
 for i in range(0,train_df.shape[0]):
 
@@ -82,10 +85,10 @@ for i in range(0,test_df.shape[0]):
 
     listrow = cut_row(test_df,i)
 
-    X.append(listrow)
+    X2.append(listrow)
 tok.fit_on_texts(X2)
 arr2 = tok.texts_to_sequences(X2)
-xtrain = pad_sequences(arr2, maxlen=max_length, padding='post')
+xtest = pad_sequences(arr2, maxlen=max_length, padding='post')
 
 ytrain = train_df['Final_Label_Kaggle']
 ytrain = ytrain.str.split(' ') 
@@ -105,15 +108,50 @@ ytrain = np.array(Yt,dtype=np.float)
 
 
 model = Sequential()
-model.add(Embedding(10000,32,input_length=max_length))
+model.add(Embedding(100000,100,input_length=max_length))
 model.add(Flatten())
-model.add(Dense(800,input_dim=max_length,kernel_initializer='random_uniform', activation='relu'))
-# model.add(layers.Dropout(0.2))
+# model.add(LSTM(64, return_sequences=True))
+# model.add(Dropout(0.5))
+# model.add(LSTM(32))
+# model.add(Dropout(0.5))
 model.add(Dense(800, activation='relu'))
 model.add(Dense(800, activation='relu'))
-model.add(Dense(8, activation='softmax'))
+model.add(Dense(800, activation='relu'))
+model.add(Dense(8, activation='sigmoid'))
 print(model.summary())
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(xtrain, ytrain, epochs=10, batch_size=20, verbose=1)
+model.fit(xtrain, ytrain, epochs=10, batch_size=50, verbose=1)
 ytest = model.predict(xtest)
 print(ytest)
+
+
+c=[]
+e=[]
+for i in range(0,len(ytest)):
+    b=[]
+    for j in range(0,8):
+        if(ytest[i][j]>0.8):
+            b.append(1)
+        else:
+            b.append(0)
+    c.append(b)   
+for i in range(0,len(c)):
+    d=[]
+    for j in range(0,8):
+        if(c[i][j] == 1):
+            d.append(j)
+    e.append(d)
+print(e[0])
+
+def writecsv(result):
+    # 寫檔
+    with open('submission.csv', 'w', newline='') as csvfile:
+        # 建立 CSV 檔寫入器
+        writer = csv.writer(csvfile)
+
+        # 寫入第一列資料
+        writer.writerow(['Id', 'Predicted'])
+        for index, row in test_df.iterrows():
+            ans = " ".join(str(i) for i in result[index])
+            writer.writerow([test_df['id'][index],ans])
+writecsv(e)
