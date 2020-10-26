@@ -42,12 +42,25 @@ def cut_row(df,i):
     texts[i] = texts[i].replace('，','')
     texts[i] = texts[i].replace('）','')
     texts[i] = texts[i].replace('!','')
+    texts[i] = texts[i].replace('.','')
     texts[i] = texts[i].replace('】','')
     texts[i] = texts[i].replace('【','')
-    
-    # words = pseg.cut(texts[i])      
-    # word = [w for w,f in words]
-    word =' '.join(jieba.cut(texts[i],cut_all=False))
+    texts[i] = texts[i].replace('是','')
+    texts[i] = texts[i].replace('而','')
+    texts[i] = texts[i].replace('在','')
+    texts[i] = texts[i].replace('且','')
+    texts[i] = texts[i].replace('或','')
+    texts[i] = texts[i].replace('有','')
+    texts[i] = texts[i].replace('與','')
+    texts[i] = texts[i].replace('不只','')
+    texts[i] = texts[i].replace('用','')
+    texts[i] = texts[i].replace('呢','')
+    texts[i] = texts[i].replace('嗎','')
+    texts[i] = texts[i].replace('其','')
+    texts[i] = texts[i].replace('為','')
+    words = pseg.cut(texts[i])      
+    word = [w for w,f in words]
+    # word =' '.join(jieba.cut(texts[i],cut_all=False))
     # print(texts[i])
     # print(word)
     return word
@@ -70,7 +83,7 @@ test_df = load_df(test_dataset_path)
 X = []
 X2 = []
 tok = keras.preprocessing.text.Tokenizer(100000)
-max_length = 800
+max_length = 200
 # train_df.shape[0]
 for i in range(0,train_df.shape[0]):
 
@@ -114,10 +127,10 @@ model.add(Flatten())
 # model.add(Dropout(0.5))
 # model.add(LSTM(32))
 # model.add(Dropout(0.5))
-model.add(Dense(800, activation='relu'))
-model.add(Dense(800, activation='relu'))
-model.add(Dense(800, activation='relu'))
-model.add(Dense(8, activation='sigmoid'))
+model.add(Dense(1000, activation='relu'))
+model.add(Dense(1000, activation='relu'))
+model.add(Dense(1000, activation='relu'))
+model.add(Dense(8, activation='softmax'))
 print(model.summary())
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.fit(xtrain, ytrain, epochs=10, batch_size=50, verbose=1)
@@ -130,7 +143,7 @@ e=[]
 for i in range(0,len(ytest)):
     b=[]
     for j in range(0,8):
-        if(ytest[i][j]>0.8):
+        if(ytest[i][j]>0.1):
             b.append(1)
         else:
             b.append(0)
