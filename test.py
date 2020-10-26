@@ -61,35 +61,31 @@ def tup(ytrain,i):
 
 train_dataset_path = 'TrainingData.xlsx'
 train_df = load_df(train_dataset_path)
+test_dataset_path = 'TestingData.xlsx'
+test_df = load_df(test_dataset_path)
 # listall = cut_all(train_df)
 X = []
+X2 = []
 tok = keras.preprocessing.text.Tokenizer(10000)
 max_length = 600
-for i in range(0,1000):
+# train_df.shape[0]
+for i in range(0,train_df.shape[0]):
 
     listrow = cut_row(train_df,i)
-    tok.fit_on_texts(listrow)
-    arr = tok.texts_to_sequences(listrow)
-    # arr = [one_hot(d, 1000) for d in listrow]
-    # #刪除空白字詞
-    arr = [item for sublist in arr for item in sublist]
-    # arr = np.array(arr)
-    # print(arr)
-    X.append(arr)
 
-X = pad_sequences(X, maxlen=max_length, padding='post')
-print(X)
+    X.append(listrow)
+tok.fit_on_texts(X)
+arr = tok.texts_to_sequences(X)
+xtrain = pad_sequences(arr, maxlen=max_length, padding='post')
 
-xtrain = X
+for i in range(0,test_df.shape[0]):
 
+    listrow = cut_row(test_df,i)
 
-
-# print(arr)
-
-# for seq in arr:
-#     print([tok.index_word[idx] for idx in seq])
-# 確認轉換成功
-
+    X.append(listrow)
+tok.fit_on_texts(X2)
+arr2 = tok.texts_to_sequences(X2)
+xtrain = pad_sequences(arr2, maxlen=max_length, padding='post')
 
 ytrain = train_df['Final_Label_Kaggle']
 ytrain = ytrain.str.split(' ') 
@@ -97,9 +93,7 @@ ytrain = ytrain.str.split(' ')
 Y =[]
 for i in range(0,1000):
    ytrain = tup(ytrain,i)
-   
-# for i in range(0,100):
-#     Y.append(ytrain[i][1])
+
 
 Y = ytrain[0:1000]
 Yt = []
@@ -108,14 +102,18 @@ for i in range(0,1000):
     Yt.append(k)
    
 ytrain = np.array(Yt,dtype=np.float)
-print(ytrain)
+
 
 model = Sequential()
 model.add(Embedding(10000,32,input_length=max_length))
 model.add(Flatten())
-model.add(Dense(512,input_dim=max_length,kernel_initializer='random_uniform', activation='relu'))
+model.add(Dense(800,input_dim=max_length,kernel_initializer='random_uniform', activation='relu'))
 # model.add(layers.Dropout(0.2))
-model.add(Dense(8, activation='relu'))
+model.add(Dense(800, activation='relu'))
+model.add(Dense(800, activation='relu'))
+model.add(Dense(8, activation='softmax'))
 print(model.summary())
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(xtrain, ytrain, epochs=10, batch_size=5, verbose=1)
+model.fit(xtrain, ytrain, epochs=10, batch_size=20, verbose=1)
+ytest = model.predict(xtest)
+print(ytest)
